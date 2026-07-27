@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import os
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -16,14 +17,20 @@ from tools.web_search import WebSearchError, web_search
 
 app = FastAPI(title="mcp-basic-tools")
 
-TOOLS = {
+_ALL_TOOLS = {
     "get_current_time": get_current_time,
     "fetch_url": fetch_url,
     "get_ip_info": get_ip_info,
     "web_search": web_search,
 }
 
-TOOL_DEFS = [TIMEDATE_TOOL_DEF, FETCH_TOOL_DEF, IPINFO_TOOL_DEF, WEB_SEARCH_TOOL_DEF]
+_ALL_TOOL_DEFS = [TIMEDATE_TOOL_DEF, FETCH_TOOL_DEF, IPINFO_TOOL_DEF, WEB_SEARCH_TOOL_DEF]
+
+# Comma-separated tool names to turn off, e.g. "web_search,fetch_url".
+DISABLED_TOOLS = {name.strip() for name in os.environ.get("MCP_DISABLED_TOOLS", "").split(",") if name.strip()}
+
+TOOLS = {name: fn for name, fn in _ALL_TOOLS.items() if name not in DISABLED_TOOLS}
+TOOL_DEFS = [d for d in _ALL_TOOL_DEFS if d["name"] not in DISABLED_TOOLS]
 
 
 class InvokeRequest(BaseModel):
