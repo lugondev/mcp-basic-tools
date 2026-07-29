@@ -7,7 +7,7 @@ COPY main.py ./
 COPY tools ./tools
 
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir .
+    pip install --no-cache-dir ".[search]"
 
 EXPOSE 8000
 
